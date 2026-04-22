@@ -17,8 +17,8 @@ _validation_summary: dict = {}
 # ── constants ─────────────────────────────────────────────────────────────────
 
 GEMINI_KEY         = "AIzaSyAAI-jmRIuk01VIIL79IzQGWEBHtvDs970"
-GEMINI_TEXT_MODEL  = "gemini-2.0-pro"
-GEMINI_IMAGE_MODEL = "gemini-3-pro-image-preview"
+GEMINI_TEXT_MODEL  = "gemini-2.5-flash"
+GEMINI_IMAGE_MODEL = "imagen-4-generate"
 
 # ── helpers ───────────────────────────────────────────────────────────────────
 
@@ -63,33 +63,28 @@ async def fetch_article(url: str) -> str:
         return f"Could not fetch article. URL: {url}. Error: {e}"
 
 async def generate_image(prompt: str, variant: str) -> Optional[str]:
-    body = {
-        "contents": [{"parts": [{"text": (
-            f"Generate a photorealistic, cinematic image for variant {variant}. "
-            "No text overlays, no charts, no graphs, no faces as primary subject. "
-            f"Scene: {prompt}"
-        )}]}],
-        "generationConfig": {"responseModalities": ["TEXT", "IMAGE"]},
-    }
     url = (
         f"https://generativelanguage.googleapis.com/v1beta/models/"
-        f"{GEMINI_IMAGE_MODEL}:generateContent?key={GEMINI_KEY}"
+        f"{GEMINI_IMAGE_MODEL}:predict?key={GEMINI_KEY}"
     )
+    body = {
+        "instances": [{"prompt": (
+            f"Photorealistic, cinematic scene, no text overlays, no charts, no graphs, "
+            f"no faces as primary subject. {prompt}"
+        )}],
+        "parameters": {"sampleCount": 1},
+    }
     try:
         async with httpx.AsyncClient(timeout=90) as client:
             r = await client.post(url, json=body)
         data = r.json()
         if "error" in data:
-            print(f"Gemini image error variant {variant}: {data['error']}")
+            print(f"Imagen error variant {variant}: {data['error']}")
             return None
-        parts = data.get("candidates", [{}])[0].get("content", {}).get("parts", [])
-        for part in parts:
-            if "inlineData" in part:
-                mime = part["inlineData"]["mimeType"]
-                b64  = part["inlineData"]["data"]
-                return f"data:{mime};base64,{b64}"
+        b64 = data["predictions"][0]["bytesBase64Encoded"]
+        return f"data:image/png;base64,{b64}"
     except Exception as e:
-        print(f"Gemini image exception variant {variant}: {e}")
+        print(f"Imagen exception variant {variant}: {e}")
     return None
 
 # ── agent system prompts ──────────────────────────────────────────────────────
