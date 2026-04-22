@@ -16,9 +16,9 @@ _validation_summary: dict = {}
 
 # ── constants ─────────────────────────────────────────────────────────────────
 
-KIMI_KEY      = os.environ.get("KIMI_API_KEY", "")
-KIMI_MODEL    = "moonshot-v1-8k"
-REPLICATE_KEY = os.environ.get("REPLICATE_API_TOKEN", "")
+GEMINI_KEY        = os.environ.get("GEMINI_API_KEY", "AIzaSyAAI-jmRluk01VlIL79IzQGWEBHtvDs970")
+GEMINI_TEXT_MODEL = "gemini-2.5-flash"
+REPLICATE_KEY     = os.environ.get("REPLICATE_API_TOKEN", "")
 
 # ── helpers ───────────────────────────────────────────────────────────────────
 
@@ -27,34 +27,27 @@ def parse_json(text: str):
     text = re.sub(r"```\s*", "", text)
     return json.loads(text.strip())
 
-async def call_kimi_text(system: str, user: str, max_tokens: int = 1200) -> str:
+async def call_gemini_text(system: str, user: str, max_tokens: int = 1200) -> str:
     async with httpx.AsyncClient(timeout=60) as client:
         r = await client.post(
-            "https://api.moonshot.cn/v1/chat/completions",
-            headers={"Authorization": f"Bearer {KIMI_KEY}", "Content-Type": "application/json"},
-            json={
-                "model": KIMI_MODEL,
-                "messages": [
-                    {"role": "system", "content": system},
-                    {"role": "user", "content": user},
-                ],
-                "max_tokens": max_tokens,
-            },
+            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_KEY}",
+            headers={"Content-Type": "application/json"},
+            json={"contents": [{"parts": [{"text": system + "\n\n" + user}]}]},
         )
     data = r.json()
     if "error" in data:
-        raise HTTPException(500, f"Kimi error: {data['error']['message']}")
+        raise HTTPException(500, f"Gemini error: {data['error']['message']}")
     try:
-        return data["choices"][0]["message"]["content"]
+        return data["candidates"][0]["content"]["parts"][0]["text"]
     except (KeyError, IndexError) as e:
-        raise HTTPException(500, f"Kimi response malformed: {e} — got: {str(data)[:300]}")
+        raise HTTPException(500, f"Gemini response malformed: {e} — got: {str(data)[:300]}")
 
-async def call_kimi(system: str, user: str, max_tokens: int = 1200) -> dict:
-    text = await call_kimi_text(system, user, max_tokens)
+async def call_gemini(system: str, user: str, max_tokens: int = 1200) -> dict:
+    text = await call_gemini_text(system, user, max_tokens)
     try:
         return parse_json(text)
     except json.JSONDecodeError as e:
-        raise HTTPException(500, f"Kimi returned invalid JSON: {e} — raw: {text[:300]}")
+        raise HTTPException(500, f"Gemini returned invalid JSON: {e} — raw: {text[:300]}")
 
 async def fetch_article(url: str) -> str:
     try:
@@ -140,7 +133,7 @@ Output only valid JSON, no preamble, no markdown fences."""
 # ── A1: Ingestion ─────────────────────────────────────────────────────────────
 
 async def run_a1(url: str, text: str) -> dict:
-    return await call_kimi(A1_SYS, f"""
+    return await call_gemini(A1_SYS, f"""
 Extract only what a visual can encode. Output JSON exactly:
 {{"headline":"string","core_tension":"one sentence — human meaning of the data",
 "key_facts":["up to 8 strings, each under 15 words"],
@@ -152,7 +145,7 @@ Source:\n{text}""", 800)
 # ── A2: Concept + Prompt Engineer ─────────────────────────────────────────────
 
 async def run_a2(a1: dict) -> dict:
-    return await call_kimi(A2_SYS, f"""
+    return await call_gemini(A2_SYS, f"""
 Read core_tension first — it is your brief. Invent a visual metaphor. Map data to visual properties.
 Output JSON exactly:
 {{"concept_title":"string","metaphor":"one sentence",
@@ -205,24 +198,17 @@ Output JSON exactly:
     try:
         async with httpx.AsyncClient(timeout=60) as client:
             r = await client.post(
-                "https://api.moonshot.cn/v1/chat/completions",
-                headers={"Authorization": f"Bearer {KIMI_KEY}", "Content-Type": "application/json"},
-                json={
-                    "model": KIMI_MODEL,
-                    "messages": [
-                        {"role": "system", "content": CRITIC_SYS},
-                        {"role": "user", "content": [
-                            {"type": "image_url", "image_url": {"url": f"data:{mime_type};base64,{b64_data}"}},
-                            {"type": "text", "text": critic_prompt},
-                        ]},
-                    ],
-                    "max_tokens": 800,
-                },
+                f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_KEY}",
+                headers={"Content-Type": "application/json"},
+                json={"contents": [{"parts": [
+                    {"text": CRITIC_SYS + "\n\n" + critic_prompt},
+                    {"inline_data": {"mime_type": mime_type, "data": b64_data}},
+                ]}]},
             )
         data = r.json()
         if "error" in data:
             raise ValueError(f"Critic API error: {data['error']}")
-        text = data["choices"][0]["message"]["content"]
+        text = data["candidates"][0]["content"]["parts"][0]["text"]
         return parse_json(text)
     except Exception as e:
         print(f"Critic round failed (returning clean): {e}")
@@ -261,7 +247,7 @@ async def run_a3(a1: dict, a2: dict, images: list) -> dict:
         f"Variant {v}: {'image generated OK' if images[i] else 'generation FAILED'}"
         for i, v in enumerate(["A", "B", "C"])
     ]
-    return await call_kimi(A3_SYS, f"""
+    return await call_gemini(A3_SYS, f"""
 Score the 3 image variants. Describe each variant before scoring.
 Weights: accuracy×0.35 + legibility×0.30 + distortion×0.25 + tone_match×0.10
 Route: confidence≥7.0 → publish | confidence<7.0 → human_queue
@@ -301,25 +287,21 @@ async def a0_fetch_test_urls(attempt: int = 0) -> list:
     prompt = _URL_PROMPTS[min(attempt, len(_URL_PROMPTS) - 1)]
     async with httpx.AsyncClient(timeout=30) as client:
         r = await client.post(
-            "https://api.moonshot.cn/v1/chat/completions",
-            headers={"Authorization": f"Bearer {KIMI_KEY}", "Content-Type": "application/json"},
-            json={
-                "model": KIMI_MODEL,
-                "messages": [{"role": "user", "content": prompt}],
-                "max_tokens": 500,
-            },
+            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_KEY}",
+            headers={"Content-Type": "application/json"},
+            json={"contents": [{"parts": [{"text": prompt}]}]},
         )
     data = r.json()
     if "error" in data:
-        raise ValueError(f"Kimi error: {data['error']['message']}")
+        raise ValueError(f"Gemini error: {data['error']['message']}")
     try:
-        text = data["choices"][0]["message"]["content"]
+        text = data["candidates"][0]["content"]["parts"][0]["text"]
     except (KeyError, IndexError) as e:
-        raise ValueError(f"Kimi response malformed: {e}")
+        raise ValueError(f"Gemini response malformed: {e}")
     try:
         urls = parse_json(text)
     except json.JSONDecodeError as e:
-        raise ValueError(f"Kimi returned invalid JSON for URLs: {e}")
+        raise ValueError(f"Gemini returned invalid JSON for URLs: {e}")
     if (
         isinstance(urls, list)
         and len(urls) >= 5
@@ -416,19 +398,15 @@ async def a0_attempt_fix(failure_point: str, failed_results: list) -> bool:
         )
         async with httpx.AsyncClient(timeout=120) as client:
             r = await client.post(
-                "https://api.moonshot.cn/v1/chat/completions",
-                headers={"Authorization": f"Bearer {KIMI_KEY}", "Content-Type": "application/json"},
-                json={
-                    "model": KIMI_MODEL,
-                    "messages": [{"role": "user", "content": fix_prompt}],
-                    "max_tokens": 8192,
-                },
+                f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_KEY}",
+                headers={"Content-Type": "application/json"},
+                json={"contents": [{"parts": [{"text": fix_prompt}]}]},
             )
         data = r.json()
-        fixed = data["choices"][0]["message"]["content"]
+        fixed = data["candidates"][0]["content"]["parts"][0]["text"]
         fixed = re.sub(r"```python\s*", "", fixed)
         fixed = re.sub(r"```\s*", "", fixed).strip()
-        if "async def call_kimi" in fixed and "async def run_a1" in fixed:
+        if "async def call_gemini" in fixed and "async def run_a1" in fixed:
             pathlib.Path(__file__).write_text(fixed)
             print(f"[A0] Auto-fix applied for: {failure_point}")
             return True
@@ -619,7 +597,7 @@ async def status():
         "cycles": _validation_summary.get("cycles"),
         "test_summary": summary_text,
         "pipeline_health": {
-            "text_model": KIMI_MODEL,
+            "text_model": GEMINI_TEXT_MODEL,
             "image_model": "imagen-4-replicate",
         },
     }
@@ -628,7 +606,7 @@ async def status():
 async def health():
     return {
         "status": "ok",
-        "text_model": "kimi-k2.6",
+        "text_model": "gemini-2.5-flash",
         "image_model": "imagen-4-replicate",
     }
 
