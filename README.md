@@ -1,2 +1,0 @@
-# DataForPeople
-visual story tellers
