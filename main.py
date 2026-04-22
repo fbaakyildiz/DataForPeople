@@ -17,7 +17,7 @@ _validation_summary: dict = {}
 # ── constants ─────────────────────────────────────────────────────────────────
 
 KIMI_KEY      = os.environ.get("KIMI_API_KEY", "")
-KIMI_MODEL    = "kimi-k2.6"
+KIMI_MODEL    = "moonshot-v1-8k"
 REPLICATE_KEY = os.environ.get("REPLICATE_API_TOKEN", "")
 
 # ── helpers ───────────────────────────────────────────────────────────────────
