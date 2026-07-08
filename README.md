@@ -1,8 +1,10 @@
 # DataForPeople
 
-DataForPeople turns a public article or report URL into a visual story concept and generated image. The app extracts the core tension from the source text, creates a visual metaphor, generates three image variants, runs a critic loop, and routes the result to publish or human review.
+DataForPeople turns a public article or report URL into a visual story concept and generated image. The app extracts the core tension from the source text, creates a visual metaphor, generates three image variants, runs a PaperBanana-inspired critic loop, and routes the result to publish or human review.
 
 The app is designed to run locally with your own API keys.
+
+Design document: [docs/DESIGN.md](docs/DESIGN.md)
 
 ## Idea
 
@@ -14,7 +16,7 @@ The project is built around a simple problem: data-heavy articles are often redu
 - generate several image variants
 - critique the generated image before final scoring
 
-The critic loop is inspired by the Visualizer-Critic pattern from *PaperBanana: Automating Academic Illustration for AI Scientists*. In that pattern, a generated image is inspected by a critic model, the prompt is revised, and the image is regenerated for a small number of rounds. DataForPeople uses the same idea for data-journalism visuals.
+The critic loop is inspired by the Visualizer-Critic pattern from *PaperBanana: Automating Academic Illustration for AI Scientists*. In that paper, a generated visual is inspected by a critic model, the critic writes concrete feedback, and the visual description is revised before another generation round. DataForPeople uses the same pattern for data-journalism visuals: the critic checks whether the image shows the source facts and whether the `core_tension` is readable without a caption.
 
 ## Workflow
 

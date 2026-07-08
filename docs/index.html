@@ -19,6 +19,7 @@
       <nav aria-label="Project navigation">
         <a href="https://fbaakyildiz.github.io/">Portfolio</a>
         <a href="#pipeline">Pipeline</a>
+        <a href="#critic">Critic loop</a>
         <a href="#run">Run locally</a>
         <a href="https://github.com/fbaakyildiz/DataForPeople" target="_blank" rel="noreferrer">GitHub</a>
       </nav>
@@ -31,7 +32,8 @@
           <h1>From article URL to visual story concept.</h1>
           <p class="hero-text">
             DataForPeople extracts the core tension from a public article, creates a visual metaphor,
-            generates image variants, and routes the result through a critic and quality gate.
+            generates image variants, and routes the result through a PaperBanana-inspired critic loop
+            and quality gate.
           </p>
           <div class="hero-actions">
             <a class="button primary" href="https://github.com/fbaakyildiz/DataForPeople" target="_blank" rel="noreferrer">Open repo</a>
@@ -51,6 +53,10 @@
             <div>
               <strong>Output</strong>
               <span>Generated visual and review metadata</span>
+            </div>
+            <div>
+              <strong>Reference</strong>
+              <span>PaperBanana Visualizer-Critic loop</span>
             </div>
             <div>
               <strong>Runtime</strong>
@@ -86,6 +92,50 @@
             <h3>Review</h3>
             <p>Uses a critic loop and final quality gate to choose publish or human review.</p>
           </article>
+        </div>
+      </section>
+
+      <section class="section" id="critic">
+        <div class="section-heading">
+          <p class="eyebrow">Critic loop</p>
+          <h2>The generated image is checked before it is treated as usable.</h2>
+        </div>
+        <div class="steps-grid">
+          <article>
+            <span>A</span>
+            <h3>PaperBanana pattern</h3>
+            <p>The project uses the Visualizer-Critic idea from PaperBanana: generate an image, inspect it, revise the prompt, and regenerate for a small number of rounds.</p>
+          </article>
+          <article>
+            <span>B</span>
+            <h3>What the critic checks</h3>
+            <p>The critic receives the image, source facts, visual metaphor, and core tension. It checks whether the image shows the facts and whether the meaning is readable without a caption.</p>
+          </article>
+          <article>
+            <span>C</span>
+            <h3>Prompt refinement</h3>
+            <p>If the visual misses the point, the critic writes a refined prompt and the system generates a new set of variants.</p>
+          </article>
+          <article>
+            <span>D</span>
+            <h3>Best round kept</h3>
+            <p>The app keeps the best-scoring round instead of blindly using the final regeneration, because later prompt edits can sometimes make an image worse.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section dark" id="design">
+        <div class="section-heading">
+          <p class="eyebrow">Design</p>
+          <h2>The design document explains the agent roles and routing logic.</h2>
+        </div>
+        <p class="note">
+          It covers A1 ingestion, A2 concept generation, image generation, the PaperBanana-inspired critic loop,
+          A3 scoring, security notes, and local runtime limits.
+        </p>
+        <div class="hero-actions">
+          <a class="button primary" href="DESIGN.md">Open design document</a>
+          <a class="button secondary" href="https://github.com/fbaakyildiz/DataForPeople/blob/main/docs/DESIGN.md" target="_blank" rel="noreferrer">View on GitHub</a>
         </div>
       </section>
 
