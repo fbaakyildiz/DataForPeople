@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DataForPeople — Visual Storytelling Pipeline</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#08080a;--bg2:#111114;--bg3:#18181c;--bg4:#1e1e24;
+  --border:rgba(255,255,255,.08);--border2:rgba(255,255,255,.14);
+  --text:#f5f4ee;--muted:#8b8a83;--muted2:#5f5e5a;
+  --accent:#8b7fef;--accent2:#5d4fd6;--accent-glow:rgba(139,127,239,.35);
+  --teal:#22b389;--teal2:#0f6e56;
+  --coral:#e2703f;--amber:#f0a52e;--green:#69a52a;--red:#e8534f;
+  --r:14px;--rs:8px;
+}
+body{font-family:-apple-system,'SF Pro Text',system-ui,sans-serif;background:
+  radial-gradient(circle at 15% 0%, rgba(139,127,239,.08), transparent 45%),
+  radial-gradient(circle at 85% 10%, rgba(34,179,137,.06), transparent 40%),
+  var(--bg);
+  color:var(--text);min-height:100vh;font-size:14px;line-height:1.6}
+.app{max-width:920px;margin:0 auto;padding:2.5rem 1.5rem 5rem;transition:filter .25s ease}
+.app.blurred{filter:blur(10px) saturate(.6);pointer-events:none;user-select:none}
+
+/* header */
+.hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:.25rem}
+.brand h1{font-size:24px;font-weight:700;letter-spacing:-.6px;
+  background:linear-gradient(100deg,#fff 20%,var(--accent) 75%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{font-size:13px;color:var(--muted);margin-top:5px}
+.gear-btn{background:var(--bg2);border:.5px solid var(--border2);color:var(--muted);width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
+.gear-btn:hover{color:var(--text);border-color:var(--accent);transform:rotate(25deg)}
+
+/* input */
+.input-box{background:var(--bg2);border:.5px solid var(--border2);border-radius:var(--r);padding:1.4rem;margin:1.75rem 0;box-shadow:0 0 0 1px rgba(255,255,255,.02), 0 8px 24px rgba(0,0,0,.25)}
+.row{display:flex;gap:8px}
+input[type=url],input[type=password],input[type=text]{flex:1;background:var(--bg4);border:.5px solid var(--border2);border-radius:var(--rs);color:var(--text);font-size:13px;padding:10px 13px;outline:none;font-family:'SF Mono',monospace;transition:border-color .15s,box-shadow .15s}
+input[type=url]::placeholder,input[type=password]::placeholder,input[type=text]::placeholder{color:var(--muted2)}
+input[type=url]:focus,input[type=password]:focus,input[type=text]:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
+.btn{background:var(--accent);border:none;color:#fff;border-radius:var(--rs);padding:10px 20px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s,transform .1s;white-space:nowrap}
+.btn:hover:not(:disabled){background:var(--accent2)}
+.btn:active:not(:disabled){transform:scale(.97)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.wide{width:100%;padding:12px;font-size:13px;margin-top:14px}
+.btn.ghost{background:transparent;border:.5px solid var(--border2);color:var(--muted)}
+.btn.ghost:hover:not(:disabled){color:var(--text);border-color:var(--accent)}
+
+/* tabs */
+.tabs{display:flex;gap:4px;border-bottom:.5px solid var(--border);margin-bottom:1.25rem}
+.tab{padding:6px 14px;font-size:13px;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;background:none;border-left:none;border-right:none;border-top:none;transition:color .15s,border-color .15s}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.badge{display:inline-flex;align-items:center;justify-content:center;background:var(--accent2);color:#fff;font-size:10px;border-radius:10px;padding:1px 6px;margin-left:5px;min-width:18px}
+.badge.h{background:var(--coral)}
+
+/* cards */
+.card{background:var(--bg2);border:.5px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:1rem}
+.card-head{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:.5px solid var(--border);cursor:pointer;user-select:none}
+.card-head:hover{background:var(--bg3)}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.dot.idle{background:var(--muted2)}
+.dot.run{background:var(--amber);animation:pulse 1s ease-in-out infinite}
+.dot.ok{background:var(--teal)}
+.dot.err{background:var(--red)}
+.dot.hq{background:var(--coral)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.card-url{font-family:'SF Mono',monospace;font-size:11px;color:var(--muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card-st{font-size:11px;color:var(--muted);flex-shrink:0}
+.chev{color:var(--muted2);font-size:11px;flex-shrink:0;transition:transform .2s}
+.chev.open{transform:rotate(180deg)}
+.card-body{padding:16px}
+
+/* hero result — the result-first, minimal view */
+.hero{border-radius:var(--rs);overflow:hidden;position:relative;background:var(--bg4);border:.5px solid var(--border)}
+.hero-img{width:100%;aspect-ratio:16/9;background:var(--bg4);display:flex;align-items:center;justify-content:center;position:relative}
+.hero-img img{width:100%;height:100%;object-fit:cover;display:block}
+.hero-fade{position:absolute;left:0;right:0;bottom:0;height:60%;background:linear-gradient(to top, rgba(0,0,0,.75), transparent)}
+.hero-info{padding:16px 18px}
+.hero-verdict{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.hero-title{font-size:18px;font-weight:700;letter-spacing:-.3px;margin-bottom:6px}
+.hero-tension{font-size:13px;color:var(--muted);font-style:italic;line-height:1.5;margin-bottom:10px}
+.hero-meta{font-size:11px;color:var(--muted2);display:flex;gap:12px;flex-wrap:wrap}
+
+.detail-toggle{width:100%;background:none;border:none;border-top:.5px dashed var(--border2);color:var(--muted);font-size:11px;padding:10px 4px 2px;margin-top:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:color .15s}
+.detail-toggle:hover{color:var(--accent)}
+.detail-body{margin-top:14px}
+
+/* agent rows */
+.arow{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px}
+.aicon{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0}
+.aicon.a1{background:rgba(139,127,239,.15);color:var(--accent)}
+.aicon.a2{background:rgba(34,179,137,.15);color:var(--teal)}
+.aicon.a3{background:rgba(240,165,46,.15);color:var(--amber)}
+.acontent{flex:1;min-width:0}
+.alabel{font-size:11px;font-weight:500;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
+.aout{background:var(--bg4);border:.5px solid var(--border);border-radius:var(--rs);padding:10px 12px;font-size:12px;line-height:1.7}
+.f{display:flex;gap:6px;margin-bottom:3px}
+.fk{color:var(--muted);min-width:100px;font-size:11px;flex-shrink:0}
+.fv{color:var(--text);font-size:12px}
+.tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;margin:2px 3px 2px 0}
+.t-alarming{background:rgba(232,83,79,.15);color:#f09595}
+.t-hopeful{background:rgba(105,165,42,.15);color:#97c459}
+.t-neutral{background:rgba(139,138,131,.15);color:#b4b2a9}
+.t-complex,.t-urgent{background:rgba(240,165,46,.15);color:var(--amber)}
+.t-image{background:rgba(139,127,239,.15);color:#c1baf7}
+.t-publish{background:rgba(105,165,42,.15);color:#97c459}
+.t-human_queue,.t-flag{background:rgba(226,112,63,.15);color:#f0997b}
+.t-good{background:rgba(34,179,137,.15);color:#5dcaa5}
+.t-weak,.t-partial{background:rgba(240,165,46,.15);color:var(--amber)}
+.t-failed{background:rgba(232,83,79,.15);color:#f09595}
+.mapping{background:var(--bg3);border-radius:4px;padding:5px 8px;margin:3px 0;font-size:11px;display:flex;gap:6px}
+.md{color:var(--accent);font-weight:500;min-width:120px}
+.ma{color:var(--muted2)}
+.mv{color:var(--text)}
+
+/* scores */
+.scrow{display:flex;gap:8px;flex-wrap:wrap}
+.sc{background:var(--bg3);border-radius:4px;padding:4px 8px;font-size:11px}
+.sc.win{border:.5px solid var(--teal2)}
+.sl{color:var(--muted)}
+.sv{color:var(--text);font-weight:500;margin-left:3px}
+
+/* image grid */
+.igrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}
+.ibox{aspect-ratio:16/9;background:var(--bg4);border:.5px solid var(--border);border-radius:var(--rs);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.ibox.win{border-color:var(--teal)}
+.ibox img{width:100%;height:100%;object-fit:cover}
+.wb{position:absolute;top:6px;left:6px;background:var(--teal);color:#fff;font-size:9px;font-weight:600;padding:2px 6px;border-radius:3px;text-transform:uppercase}
+.vl{position:absolute;bottom:6px;right:6px;background:rgba(0,0,0,.6);color:#fff;font-size:9px;padding:2px 6px;border-radius:3px}
+.spin{width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* log */
+.logbox{background:var(--bg3);border-radius:var(--rs);padding:10px 12px;font-family:'SF Mono',monospace;font-size:11px;color:var(--muted);line-height:1.8;max-height:200px;overflow-y:auto}
+.logbox .logline{display:block}
+.logbox .logline.ok{color:var(--teal)}
+.logbox .logline.err{color:var(--red)}
+
+/* connector */
+.conn{padding:2px 0 6px 14px}
+.connl{width:1px;height:16px;background:var(--border2)}
+
+/* prompt box */
+.pbox{background:var(--bg3);border-radius:var(--rs);padding:10px 12px;font-size:11px;font-family:'SF Mono',monospace;color:var(--text);line-height:1.7;white-space:pre-wrap;word-break:break-word;max-height:80px;overflow:hidden;-webkit-mask-image:linear-gradient(to bottom,black 60%,transparent)}
+
+/* feed */
+.fgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.fcard{background:var(--bg2);border:.5px solid var(--border);border-radius:var(--r);overflow:hidden;transition:transform .15s,border-color .15s}
+.fcard:hover{transform:translateY(-2px);border-color:var(--border2)}
+.fimg{width:100%;aspect-ratio:16/9;background:var(--bg4);overflow:hidden;display:flex;align-items:center;justify-content:center}
+.fimg img{width:100%;height:100%;object-fit:cover}
+.fbody{padding:12px}
+.ftitle{font-size:13px;font-weight:600;margin-bottom:4px}
+.ftens{font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:8px;font-style:italic}
+.fscores{display:flex;gap:6px;flex-wrap:wrap}
+.fscore{font-size:11px;padding:2px 6px;border-radius:4px;background:var(--bg4)}
+
+/* human queue */
+.hqitem{background:var(--bg2);border:.5px solid rgba(226,112,63,.25);border-radius:var(--r);padding:16px;margin-bottom:10px}
+.hqhead{display:flex;gap:12px;align-items:flex-start;margin-bottom:12px}
+.hqimg{width:140px;aspect-ratio:16/9;background:var(--bg4);border-radius:var(--rs);flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.hqimg img{width:100%;height:100%;object-fit:cover}
+.hqinfo{flex:1}
+.hqtitle{font-size:13px;font-weight:600}
+.hqreason{font-size:12px;color:#f0997b;margin-top:4px}
+.hqmeta{font-size:11px;color:var(--muted);margin-top:6px}
+.hqacts{display:flex;gap:8px}
+.btn-approve{background:rgba(105,165,42,.15);border:.5px solid var(--green);color:#97c459;border-radius:var(--rs);padding:6px 14px;font-size:12px;cursor:pointer;transition:background .15s}
+.btn-approve:hover{background:rgba(105,165,42,.25)}
+.btn-discard{background:rgba(232,83,79,.1);border:.5px solid rgba(232,83,79,.3);color:#f09595;border-radius:var(--rs);padding:6px 14px;font-size:12px;cursor:pointer}
+.btn-discard:hover{background:rgba(232,83,79,.2)}
+
+/* analytics */
+.sgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:1.5rem}
+.scard{background:var(--bg2);border:.5px solid var(--border);border-radius:var(--rs);padding:12px}
+.slabel{font-size:11px;color:var(--muted);margin-bottom:4px}
+.sval{font-size:22px;font-weight:700}
+.ssub{font-size:11px;color:var(--muted2);margin-top:2px}
+.brow{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.blabel{font-size:11px;color:var(--muted);width:90px;flex-shrink:0;text-align:right}
+.btrack{flex:1;height:6px;background:var(--bg4);border-radius:3px;overflow:hidden}
+.bfill{height:100%;border-radius:3px;transition:width .6s}
+.bval{font-size:11px;color:var(--muted);width:36px;flex-shrink:0}
+
+/* step indicator */
+.steps{display:flex;align-items:flex-start;margin-bottom:14px}
+.swrap{display:flex;flex-direction:column;align-items:center}
+.sdot{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0}
+.sdot.idle{background:var(--bg4);color:var(--muted2);border:.5px solid var(--border2)}
+.sdot.active{background:var(--accent2);color:#fff}
+.sdot.done{background:var(--teal2);color:#fff}
+.sline{height:1px;width:24px;background:var(--border);flex-shrink:0;margin-top:10px}
+.sname{font-size:10px;color:var(--muted2);margin-top:3px;text-align:center}
+
+/* error */
+.errmsg{background:rgba(232,83,79,.1);border:.5px solid rgba(232,83,79,.3);border-radius:var(--rs);padding:10px 12px;color:#f09595;font-size:12px}
+
+/* empty */
+.empty{text-align:center;padding:3rem 1rem;color:var(--muted);font-size:13px}
+.eicon{font-size:32px;margin-bottom:8px;opacity:.4}
+
+/* key gate overlay */
+.gate{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;padding:1.5rem;
+  background:radial-gradient(circle at 50% 30%, rgba(139,127,239,.12), transparent 55%), rgba(4,4,6,.72)}
+.gate-card{background:var(--bg2);border:.5px solid var(--border2);border-radius:16px;max-width:420px;width:100%;padding:2rem;position:relative;
+  box-shadow:0 20px 60px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.03)}
+.gate-icon{width:44px;height:44px;border-radius:12px;background:rgba(139,127,239,.15);color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:14px}
+.gate-card h2{font-size:18px;font-weight:700;letter-spacing:-.3px;margin-bottom:8px}
+.gate-card p{font-size:12.5px;color:var(--muted);line-height:1.6;margin-bottom:18px}
+.gate-field{margin-bottom:14px}
+.gate-field label{display:block;font-size:11px;color:var(--muted);margin-bottom:6px;font-weight:500}
+.gate-input-row{display:flex;gap:6px}
+.gate-input-row input{flex:1}
+.eye-btn{background:var(--bg4);border:.5px solid var(--border2);border-radius:var(--rs);color:var(--muted);width:36px;flex-shrink:0;cursor:pointer;font-size:13px}
+.eye-btn:hover{color:var(--text)}
+.gate-link{font-size:11px;color:var(--accent);text-decoration:none;display:inline-block;margin-top:5px}
+.gate-link:hover{text-decoration:underline}
+.gate-close{position:absolute;top:14px;right:14px;background:none;border:none;color:var(--muted2);font-size:18px;cursor:pointer;width:28px;height:28px}
+.gate-close:hover{color:var(--text)}
+.gate-note{font-size:10.5px;color:var(--muted2);margin-top:14px;line-height:1.5;display:flex;gap:6px}
+</style>
+</head>
+<body>
+<div id="keyGate" class="gate" style="display:none">
+  <div class="gate-card">
+    <button class="gate-close" id="gateCloseBtn" onclick="closeGate()" style="display:none">✕</button>
+    <div class="gate-icon">🔑</div>
+    <h2>Enter your API keys</h2>
+    <p>This tool runs on your own Gemini and Hugging Face keys. Keys are stored only in this browser (localStorage) and sent directly to this local server — nowhere else.</p>
+
+    <div class="gate-field">
+      <label>Gemini API Key</label>
+      <div class="gate-input-row">
+        <input type="password" id="gateGemini" placeholder="AIzaSy…" autocomplete="off">
+        <button class="eye-btn" onclick="toggleEye('gateGemini')" type="button">👁</button>
+      </div>
+      <a class="gate-link" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Get a free key →</a>
+    </div>
+
+    <div class="gate-field">
+      <label>Hugging Face Token</label>
+      <div class="gate-input-row">
+        <input type="password" id="gateHF" placeholder="hf_…" autocomplete="off">
+        <button class="eye-btn" onclick="toggleEye('gateHF')" type="button">👁</button>
+      </div>
+      <a class="gate-link" href="https://huggingface.co/settings/tokens" target="_blank" rel="noopener">Get a token →</a>
+    </div>
+
+    <button class="btn wide" onclick="saveKeys()">Save & continue</button>
+    <div id="gateError" class="errmsg" style="display:none;margin-top:12px"></div>
+    <div class="gate-note">⚠ Image generation (Hugging Face Inference API — FLUX.1-dev via fal-ai) may incur usage cost beyond the free monthly quota; text agents (Gemini) run on the free tier.</div>
+  </div>
+</div>
+
+<div class="app" id="app">
+  <div class="hdr">
+    <div class="brand">
+      <h1>DataForPeople</h1>
+      <p class="sub">A1 ingest · A2 concept · Gemini generate · Critic refine (PaperBanana) · A3 gate — 100% local</p>
+    </div>
+    <button class="gear-btn" onclick="openGate(true)" title="Edit API keys">⚙</button>
+  </div>
+
+  <div class="input-box">
+    <div class="row">
+      <input type="url" id="urlInput" placeholder="https://example.com/report-or-article" />
+      <button class="btn" id="runBtn" onclick="run()">Run</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="tab('pipeline',this)">Runs <span class="badge" id="b-pipeline">0</span></button>
+    <button class="tab" onclick="tab('feed',this)">Published <span class="badge" id="b-feed">0</span></button>
+    <button class="tab" onclick="tab('queue',this)">Human queue <span class="badge h" id="b-queue">0</span></button>
+    <button class="tab" onclick="tab('analytics',this)">Analytics</button>
+  </div>
+
+  <div id="tab-pipeline">
+    <div id="jobs"><div class="empty"><div class="eicon">◎</div>No jobs yet. Paste a URL above.</div></div>
+  </div>
+  <div id="tab-feed" style="display:none">
+    <div class="fgrid" id="feed"><div class="empty" style="grid-column:1/-1"><div class="eicon">◻</div>Published visuals appear here</div></div>
+  </div>
+  <div id="tab-queue" style="display:none">
+    <div id="hqueue"><div class="empty"><div class="eicon">◷</div>No items awaiting review</div></div>
+  </div>
+  <div id="tab-analytics" style="display:none">
+    <div id="analytics"></div>
+  </div>
+</div>
+
+<script>
+const API_BASE = window.location.origin;
+const LS_GEMINI = "dfp_gemini_key";
+const LS_HF = "dfp_hf_key";
+
+let jobs=[], published=[], hqueue=[];
+let stats={total:0,autoPublish:0,humanQueued:0,scores:[],criticRounds:[]};
+
+// ── key gate ──────────────────────────────────────────────────────────────────
+function getKeys(){ return {gemini: localStorage.getItem(LS_GEMINI)||"", hf: localStorage.getItem(LS_HF)||""}; }
+function hasKeys(){ const k=getKeys(); return !!k.gemini && !!k.hf; }
+
+function openGate(closable){
+  const k=getKeys();
+  document.getElementById("gateGemini").value = k.gemini;
+  document.getElementById("gateHF").value = k.hf;
+  document.getElementById("gateError").style.display = "none";
+  document.getElementById("gateCloseBtn").style.display = closable ? "" : "none";
+  document.getElementById("keyGate").style.display = "flex";
+  document.getElementById("app").classList.add("blurred");
+}
+function closeGate(){
+  if (!hasKeys()) return;
+  document.getElementById("keyGate").style.display = "none";
+  document.getElementById("app").classList.remove("blurred");
+}
+function saveKeys(){
+  const g = document.getElementById("gateGemini").value.trim();
+  const h = document.getElementById("gateHF").value.trim();
+  const err = document.getElementById("gateError");
+  if (!g || !h) {
+    err.textContent = "Both keys are required.";
+    err.style.display = "";
+    return;
+  }
+  localStorage.setItem(LS_GEMINI, g);
+  localStorage.setItem(LS_HF, h);
+  closeGate();
+}
+function toggleEye(id){
+  const el = document.getElementById(id);
+  el.type = el.type === "password" ? "text" : "password";
+}
+if (!hasKeys()) openGate(false); else document.getElementById("keyGate").style.display = "none";
+
+// ── run ───────────────────────────────────────────────────────────────────────
+async function run() {
+  if (!hasKeys()) { openGate(true); return; }
+  const url = document.getElementById("urlInput").value.trim();
+  if (!url) { alert("Please enter a URL"); return; }
+  const btn = document.getElementById("runBtn");
+  btn.disabled = true;
+  document.getElementById("urlInput").value = "";
+
+  const id = Date.now().toString();
+  jobs.unshift({id, url, status:"running", result:null, error:null, expanded:true, detailsOpen:false, log:[]});
+  stats.total++;
+  renderJobs(); badges();
+
+  try {
+    const streamLog = setInterval(() => { const j=jobs.find(x=>x.id===id); if(j) renderJobs(); }, 800);
+    const keys = getKeys();
+
+    const r = await fetch(`${API_BASE}/run`, {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({url, gemini_key: keys.gemini, hf_key: keys.hf})
+    });
+
+    clearInterval(streamLog);
+
+    if (!r.ok) {
+      const err = await r.json().catch(()=>({detail:"Unknown error"}));
+      throw new Error(err.detail || r.statusText);
+    }
+
+    const data = await r.json();
+    const j = jobs.find(x=>x.id===id);
+    j.result = data;
+    j.log = data.log || [];
+
+    if (data.critic_rounds !== undefined) stats.criticRounds.push(data.critic_rounds);
+    if (data.a3?.confidence) stats.scores.push(data.a3.confidence);
+
+    const verdict = data.a3?.verdict;
+    if (verdict === "publish") {
+      j.status = "published";
+      published.unshift({id, ...data});
+      stats.autoPublish++;
+    } else {
+      j.status = "human_queue";
+      const flags = data.a3?.flags?.join(", ");
+      hqueue.unshift({id, ...data, reason: flags || "A3 confidence below threshold"});
+      stats.humanQueued++;
+    }
+
+  } catch(e) {
+    const j = jobs.find(x=>x.id===id);
+    j.status = "error"; j.error = e.message;
+    if (/API key|API token/i.test(e.message)) openGate(true);
+  }
+
+  document.getElementById("runBtn").disabled = false;
+  renderJobs(); renderFeed(); renderHQ(); badges(); renderAnalytics();
+}
+
+// ── render ────────────────────────────────────────────────────────────────────
+function renderJobs() {
+  const c = document.getElementById("jobs");
+  if (!jobs.length) { c.innerHTML=`<div class="empty"><div class="eicon">◎</div>No jobs yet.</div>`; return; }
+  c.innerHTML = jobs.map(j => jobHTML(j)).join("");
+}
+
+function jobHTML(j) {
+  const dotCls = {published:"ok",human_queue:"hq",error:"err",running:"run"}[j.status]||"idle";
+  const stMap  = {published:"published",human_queue:"human queue",error:"error",running:"running…"};
+  const st     = stMap[j.status] || j.status;
+  const cr     = j.result?.critic_rounds;
+  const meta   = j.result ? ` · ${j.result.elapsed_s}s${cr!=null?" · "+cr+" critic round"+(cr!==1?"s":""):""}` : "";
+
+  const body = j.expanded ? `<div class="card-body">
+    ${j.status==="running" ? stepsHTML(j) : ""}
+    ${j.result ? heroHTML(j) : ""}
+    ${j.error ? `<div class="errmsg">Error: ${esc(j.error)}</div>` : ""}
+    ${j.log?.length && !j.result ? logHTML(j.log) : ""}
+  </div>` : "";
+
+  return `<div class="card">
+    <div class="card-head" onclick="toggleJob('${j.id}')">
+      <div class="dot ${dotCls}"></div>
+      <div class="card-url">${esc(j.url)}</div>
+      <div class="card-st">${st}${meta}</div>
+      <div class="chev ${j.expanded?"open":""}">▼</div>
+    </div>
+    ${body}
+  </div>`;
+}
+
+function stepsHTML(j) {
+  const names  = ["A1","A2","Gen","Critic","A3","Done"];
+  const labels = ["Ingest","Concept","Generate","Refine","Score","Done"];
+  const log = j.log||[];
+  let cur = 0;
+  if (log.some(l=>l.includes("A1: running"))) cur=1;
+  if (log.some(l=>l.includes("A2:")))         cur=2;
+  if (log.some(l=>l.includes("GEN:")))        cur=3;
+  if (log.some(l=>l.includes("CRITIC:")))     cur=4;
+  if (log.some(l=>l.includes("A3:")))         cur=5;
+
+  return `<div class="steps">${names.map((n,i)=>{
+    const cls = i<cur?"done":i===cur?"active":"idle";
+    return `<div class="swrap"><div class="sdot ${cls}">${n}</div><div class="sname">${labels[i]}</div></div>${i<names.length-1?'<div class="sline"></div>':""}`;
+  }).join("")}${logHTML(log)}</div>`;
+}
+
+// hero: result-first minimal view — big winning image, title, tension. Everything
+// else (A1/A2/Gen grid/Critic/A3) lives behind a "show pipeline details" toggle.
+function heroHTML(j) {
+  const d = j.result;
+  const {a1, a2, a3} = d;
+  const wi  = {A:0,B:1,C:2}[a3?.winner_variant] ?? 0;
+  const img = d.winner_image || d.images?.[wi];
+  const verdict = a3?.verdict || "human_queue";
+
+  return `
+    <div class="hero">
+      <div class="hero-img">${img?`<img src="${img}" alt="${esc(a2?.concept_title||"")}" /><div class="hero-fade"></div>`:'<div class="spin"></div>'}</div>
+      <div class="hero-info">
+        <div class="hero-verdict">
+          <span class="tag t-${verdict}">${verdict==="publish"?"ready to publish":"needs review"}</span>
+          ${a1?.tone?`<span class="tag t-${a1.tone}">${a1.tone}</span>`:""}
+        </div>
+        <div class="hero-title">${esc(a2?.concept_title||"")}</div>
+        <div class="hero-tension">"${esc(a1?.core_tension||"")}"</div>
+        <div class="hero-meta">
+          <span>confidence: ${(a3?.confidence||0).toFixed(1)}/10</span>
+          <span>${d.elapsed_s}s</span>
+          <span>${d.critic_rounds} critic round${d.critic_rounds!==1?"s":""}</span>
+        </div>
+      </div>
+    </div>
+    <button class="detail-toggle" onclick="toggleDetails('${j.id}')">
+      ${j.detailsOpen ? "Hide pipeline details" : "Show pipeline details (A1 → A2 → Gen → Critic → A3)"}
+      <span>${j.detailsOpen?"▲":"▼"}</span>
+    </button>
+    ${j.detailsOpen ? `<div class="detail-body">${fullResultHTML(d)}${j.log?.length?logHTML(j.log):""}</div>` : ""}
+  `;
+}
+
+function toggleDetails(id){ const j=jobs.find(x=>x.id===id); if(j){ j.detailsOpen=!j.detailsOpen; renderJobs(); } }
+
+function fullResultHTML(d) {
+  const {a1, a2, a3, images, critic_rounds, critic_issues} = d;
+  return `
+    ${a1 ? a1HTML(a1) : ""}
+    ${a1&&a2 ? '<div class="conn"><div class="connl"></div></div>' : ""}
+    ${a2 ? a2HTML(a2) : ""}
+    ${images?.some(x=>x) ? '<div class="conn"><div class="connl"></div></div>' : ""}
+    ${images?.some(x=>x) ? imagesHTML(images, a3?.winner_variant) : ""}
+    ${critic_rounds!=null ? '<div class="conn"><div class="connl"></div></div>' : ""}
+    ${critic_rounds!=null ? criticHTML(critic_rounds, critic_issues) : ""}
+    ${a3 ? '<div class="conn"><div class="connl"></div></div>' : ""}
+    ${a3 ? a3HTML(a3) : ""}
+  `;
+}
+
+function a1HTML(a1) {
+  return `<div class="arow"><div class="aicon a1">A1</div><div class="acontent">
+    <div class="alabel">Ingestion Agent</div>
+    <div class="aout">
+      <div class="f"><span class="fk">headline</span><span class="fv">${esc(a1.headline||"")}</span></div>
+      <div class="f"><span class="fk">core tension</span><span class="fv" style="color:#c1baf7;font-style:italic">${esc(a1.core_tension||"")}</span></div>
+      <div class="f"><span class="fk">domain</span><span class="fv">${esc(a1.domain||"")}</span></div>
+      <div class="f"><span class="fk">tone</span><span class="tag t-${a1.tone||"neutral"}">${a1.tone||"neutral"}</span>${a1.sensitive?'<span class="tag t-flag">sensitive</span>':""}</div>
+      ${a1.key_facts?.length?`<div class="f"><span class="fk">key facts</span><span class="fv">${a1.key_facts.slice(0,4).map(f=>`<div>• ${esc(f)}</div>`).join("")}</span></div>`:""}
+      ${a1.numbers?.length?`<div class="f"><span class="fk">numbers</span><span class="fv">${a1.numbers.slice(0,4).map(n=>`<span class="tag t-image">${n.value}${n.unit?" "+n.unit:""} — ${n.label}</span>`).join("")}</span></div>`:""}
+    </div>
+  </div></div>`;
+}
+
+function a2HTML(a2) {
+  return `<div class="arow"><div class="aicon a2">A2</div><div class="acontent">
+    <div class="alabel">Concept + Prompt Engineer</div>
+    <div class="aout">
+      <div class="f"><span class="fk">concept</span><span class="fv" style="font-weight:500">${esc(a2.concept_title||"")}</span></div>
+      <div class="f"><span class="fk">metaphor</span><span class="fv" style="font-style:italic">${esc(a2.metaphor||"")}</span></div>
+      <div class="f"><span class="fk">format</span><span class="tag t-image">${a2.format||"image"}</span></div>
+      ${a2.data_mappings?.length?`<div class="f"><span class="fk">mappings</span><div style="flex:1">${a2.data_mappings.slice(0,3).map(m=>`<div class="mapping"><span class="md">${esc(m.datum||"")}</span><span class="ma">→</span><span class="mv">${esc(m.visual_property||"")}</span></div>`).join("")}</div></div>`:""}
+      <div class="f"><span class="fk">prompt</span><div class="pbox" style="flex:1">${esc((a2.generation_prompt||"").slice(0,400))}</div></div>
+    </div>
+  </div></div>`;
+}
+
+function imagesHTML(images, winner) {
+  const lbls=["A","B","C"];
+  return `<div class="arow"><div class="aicon" style="background:rgba(255,255,255,.04);color:var(--muted);font-size:10px;font-weight:600">GEN</div><div class="acontent">
+    <div class="alabel">Hugging Face (FLUX.1-dev) — 3 variants in parallel</div>
+    <div class="igrid">${lbls.map((l,i)=>{
+      const img=images[i];
+      const isW=winner===l;
+      return `<div class="ibox ${isW?"win":""}">${isW?'<span class="wb">winner</span>':""}<span class="vl">${l}</span>${img?`<img src="${img}" alt="Variant ${l}" />`:'<div class="spin"></div>'}</div>`;
+    }).join("")}</div>
+  </div></div>`;
+}
+
+function criticHTML(rounds, issues) {
+  const clean = !issues || issues.length === 0;
+  return `<div class="arow">
+    <div class="aicon" style="background:rgba(34,179,137,.12);color:var(--teal);font-size:9px;font-weight:700;letter-spacing:-.3px">CRIT</div>
+    <div class="acontent">
+      <div class="alabel">Visualizer-Critic Loop · best-of-3 · PaperBanana</div>
+      <div class="aout">
+        <div class="f"><span class="fk">rounds run</span><span class="fv">${rounds} / 3${clean?" — stopped early, image was clean":""}</span></div>
+        ${issues?.length
+          ? `<div class="f"><span class="fk">issues (${issues.length})</span><div style="flex:1">${issues.map(i=>`<div style="font-size:11px;color:#f09595;margin:1px 0">• ${esc(i)}</div>`).join("")}</div></div>`
+          : `<div class="f"><span class="fk">issues</span><span class="fv" style="color:var(--teal)">none found</span></div>`
+        }
+      </div>
+    </div>
+  </div>`;
+}
+
+function a3HTML(a3) {
+  const v = a3.verdict || "human_queue";
+  return `<div class="arow"><div class="aicon a3">A3</div><div class="acontent">
+    <div class="alabel">Quality Gate</div>
+    <div class="aout">
+      <div class="f"><span class="fk">verdict</span><span class="tag t-${v}">${v}</span><span style="margin-left:6px;font-size:12px;color:var(--muted)">confidence: <strong style="color:var(--text)">${(a3.confidence||0).toFixed(1)}</strong></span></div>
+      ${a3.flags?.length?`<div class="f"><span class="fk">flags</span>${a3.flags.map(f=>`<span class="tag t-flag">${f}</span>`).join("")}</div>`:""}
+      <div class="f"><span class="fk">scores</span><div class="scrow">${["A","B","C"].map(vv=>{const s=a3.scores?.[vv];if(!s)return"";const isW=a3.winner_variant===vv;return`<div class="sc ${isW?"win":""}"><span style="font-size:10px;font-weight:600;margin-right:3px${isW?";color:var(--teal)":""}">${vv}${isW?" ✓":""}</span><span class="sl">acc</span><span class="sv">${(s.accuracy||0).toFixed(1)}</span><span class="sl" style="margin-left:3px">leg</span><span class="sv">${(s.legibility||0).toFixed(1)}</span><span class="sl" style="margin-left:3px">∑</span><span class="sv">${(s.composite||0).toFixed(1)}</span></div>`;}).join("")}</div></div>
+      ${a3.visual_description?`<div class="f"><span class="fk">description</span><span class="fv" style="font-style:italic">${esc(a3.visual_description)}</span></div>`:""}
+    </div>
+  </div></div>`;
+}
+
+function logHTML(log) {
+  return `<div class="f" style="margin-top:8px"><span class="fk">run log</span><div class="logbox">${log.map(l=>{
+    const cls=l.includes("done")||l.includes("OK")||l.includes("clean")?"ok":l.includes("error")||l.includes("fail")?"err":"";
+    return `<span class="logline ${cls}">${esc(l)}</span>`;
+  }).join("")}</div></div>`;
+}
+
+function renderFeed() {
+  const g=document.getElementById("feed");
+  if(!published.length){g.innerHTML=`<div class="empty" style="grid-column:1/-1"><div class="eicon">◻</div>Published visuals appear here</div>`;return;}
+  g.innerHTML=published.map(item=>{
+    const wi={A:0,B:1,C:2}[item.a3?.winner_variant]||0;
+    const img=item.images?.[wi];
+    const s=item.a3?.scores?.[item.a3?.winner_variant];
+    const cr=item.critic_rounds;
+    return `<div class="fcard"><div class="fimg">${img?`<img src="${img}" alt="${esc(item.a2?.concept_title||"")}" />`:`<div style="font-size:11px;color:var(--muted);text-align:center;padding:12px;font-style:italic">"${esc((item.a2?.metaphor||"").slice(0,80))}"</div>`}</div><div class="fbody"><div class="ftitle">${esc(item.a2?.concept_title||"")}</div><div class="ftens">${esc(item.a1?.core_tension||"")}</div><div class="fscores"><div class="fscore"><span style="color:var(--muted)">acc </span><span>${(s?.accuracy||0).toFixed(1)}</span></div><div class="fscore"><span style="color:var(--muted)">leg </span><span>${(s?.legibility||0).toFixed(1)}</span></div><div class="fscore"><span style="color:var(--muted)">A3 </span><span>${(item.a3?.confidence||0).toFixed(1)}</span></div>${cr!=null?`<div class="fscore"><span style="color:var(--muted)">critic </span><span>${cr}r</span></div>`:""}
+    </div></div></div>`;
+  }).join("");
+}
+
+function renderHQ() {
+  const c=document.getElementById("hqueue");
+  if(!hqueue.length){c.innerHTML=`<div class="empty"><div class="eicon">◷</div>No items awaiting review</div>`;return;}
+  c.innerHTML=hqueue.map((item,idx)=>{
+    const wi={A:0,B:1,C:2}[item.a3?.winner_variant]||0;
+    const img=item.images?.[wi];
+    return `<div class="hqitem"><div class="hqhead"><div class="hqimg">${img?`<img src="${img}" alt="queued visual" />`:`<div style="font-size:10px;color:var(--muted);text-align:center;padding:8px;font-style:italic">"${esc((item.a2?.metaphor||"").slice(0,50))}"</div>`}</div><div class="hqinfo"><div class="hqtitle">${esc(item.a2?.concept_title||"")}</div><div class="hqreason">⚠ ${esc(item.reason||"")}</div><div class="hqmeta">${esc(item.a1?.headline||"")} · A3 conf: ${(item.a3?.confidence||0).toFixed(1)}</div></div></div><div class="hqacts"><button class="btn-approve" onclick="approveHQ(${idx})">Approve + Publish</button><button class="btn-discard" onclick="discardHQ(${idx})">Discard</button></div></div>`;
+  }).join("");
+}
+
+function renderAnalytics() {
+  const c=document.getElementById("analytics");
+  const total=stats.total||1;
+  const pubRate=Math.round((published.length/total)*100);
+  const hqRate=Math.round((stats.humanQueued/total)*100);
+  const meanA3=stats.scores.length?(stats.scores.reduce((a,b)=>a+b,0)/stats.scores.length).toFixed(1):"—";
+  const meanCritic=stats.criticRounds.length?(stats.criticRounds.reduce((a,b)=>a+b,0)/stats.criticRounds.length).toFixed(1):"—";
+  c.innerHTML=`<div class="sgrid">
+    <div class="scard"><div class="slabel">Total runs</div><div class="sval">${stats.total}</div></div>
+    <div class="scard"><div class="slabel">Published</div><div class="sval" style="color:var(--teal)">${published.length}</div></div>
+    <div class="scard"><div class="slabel">Human queue</div><div class="sval" style="color:var(--coral)">${hqueue.length}</div></div>
+    <div class="scard"><div class="slabel">Mean A3 confidence</div><div class="sval">${meanA3}</div><div class="ssub">target ≥ 7.0</div></div>
+    <div class="scard"><div class="slabel">Mean critic rounds</div><div class="sval">${meanCritic}</div><div class="ssub">target ≤ 1.5</div></div>
+  </div>
+  <div style="background:var(--bg2);border:.5px solid var(--border);border-radius:var(--r);padding:16px">
+    <div style="font-size:12px;font-weight:500;margin-bottom:12px;color:var(--muted)">Pipeline health</div>
+    ${[{l:"Auto-publish",v:pubRate,c:"#69a52a"},{l:"Human queue",v:hqRate,c:"#e2703f"},{l:"Clean in 1 round",v:stats.criticRounds.length?Math.round(stats.criticRounds.filter(r=>r===1).length/stats.criticRounds.length*100):0,c:"#8b7fef"}].map(m=>`<div class="brow"><div class="blabel">${m.l}</div><div class="btrack"><div class="bfill" style="width:${Math.min(m.v,100)}%;background:${m.c}"></div></div><div class="bval">${m.v}%</div></div>`).join("")}
+  </div>`;
+}
+
+function approveHQ(idx) {
+  const item=hqueue[idx]; hqueue.splice(idx,1);
+  published.unshift({...item});
+  const j=jobs.find(x=>x.id===item.id); if(j) j.status="published";
+  renderHQ();renderFeed();renderJobs();badges();renderAnalytics();
+}
+function discardHQ(idx) {
+  const item=hqueue[idx]; hqueue.splice(idx,1);
+  const j=jobs.find(x=>x.id===item.id); if(j) j.status="discarded";
+  renderHQ();renderJobs();badges();renderAnalytics();
+}
+function toggleJob(id){const j=jobs.find(x=>x.id===id);if(j){j.expanded=!j.expanded;renderJobs();}}
+function tab(name,el){["pipeline","feed","queue","analytics"].forEach(t=>document.getElementById("tab-"+t).style.display="none");document.getElementById("tab-"+name).style.display="";document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));el.classList.add("active");if(name==="analytics")renderAnalytics();}
+function badges(){document.getElementById("b-pipeline").textContent=jobs.length;document.getElementById("b-feed").textContent=published.length;document.getElementById("b-queue").textContent=hqueue.length;}
+function esc(s){if(!s)return"";return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+
+renderAnalytics();
+</script>
+</body>
+</html>

@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="DataForPeople turns public articles into visual story concepts and generated images." />
+    <title>DataForPeople</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="#top">
+        <span>DFP</span>
+        <strong>DataForPeople</strong>
+      </a>
+      <nav aria-label="Project navigation">
+        <a href="https://fbaakyildiz.github.io/">Portfolio</a>
+        <a href="#pipeline">Pipeline</a>
+        <a href="#run">Run locally</a>
+        <a href="https://github.com/fbaakyildiz/DataForPeople" target="_blank" rel="noreferrer">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="hero">
+        <div>
+          <p class="eyebrow">Visual storytelling pipeline</p>
+          <h1>From article URL to visual story concept.</h1>
+          <p class="hero-text">
+            DataForPeople extracts the core tension from a public article, creates a visual metaphor,
+            generates image variants, and routes the result through a critic and quality gate.
+          </p>
+          <div class="hero-actions">
+            <a class="button primary" href="https://github.com/fbaakyildiz/DataForPeople" target="_blank" rel="noreferrer">Open repo</a>
+            <a class="button secondary" href="#run">Run locally</a>
+          </div>
+        </div>
+        <aside class="panel" aria-label="Project summary">
+          <div class="metric">
+            <span>A1-A3</span>
+            <small>agent pipeline</small>
+          </div>
+          <div class="panel-grid">
+            <div>
+              <strong>Input</strong>
+              <span>Public article or report URL</span>
+            </div>
+            <div>
+              <strong>Output</strong>
+              <span>Generated visual and review metadata</span>
+            </div>
+            <div>
+              <strong>Runtime</strong>
+              <span>Local FastAPI app</span>
+            </div>
+          </div>
+        </aside>
+      </section>
+
+      <section class="section" id="pipeline">
+        <div class="section-heading">
+          <p class="eyebrow">Pipeline</p>
+          <h2>Each step keeps the source meaning attached to the image.</h2>
+        </div>
+        <div class="steps-grid">
+          <article>
+            <span>01</span>
+            <h3>Ingest</h3>
+            <p>Fetches source text and extracts headline, facts, numbers, tone, and core tension.</p>
+          </article>
+          <article>
+            <span>02</span>
+            <h3>Concept</h3>
+            <p>Creates a visual metaphor and prompt from the structured source summary.</p>
+          </article>
+          <article>
+            <span>03</span>
+            <h3>Generate</h3>
+            <p>Produces three 16:9 image variants with the Hugging Face Inference API.</p>
+          </article>
+          <article>
+            <span>04</span>
+            <h3>Review</h3>
+            <p>Uses a critic loop and final quality gate to choose publish or human review.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section dark" id="run">
+        <div class="section-heading">
+          <p class="eyebrow">Run locally</p>
+          <h2>The backend needs local API keys and cannot run on GitHub Pages.</h2>
+        </div>
+        <pre><code>python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+uvicorn main:app --reload --port 8000</code></pre>
+        <p class="note">Open <code>http://localhost:8000</code>, enter Gemini and Hugging Face keys, then paste a public URL.</p>
+      </section>
+    </main>
+
+    <footer>
+      <span>DataForPeople</span>
+      <span>
+        <a href="https://fbaakyildiz.github.io/">Portfolio</a>
+        <a href="DESIGN.md">Design</a>
+      </span>
+    </footer>
+  </body>
+</html>
