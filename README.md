@@ -4,6 +4,18 @@ DataForPeople turns a public article or report URL into a visual story concept a
 
 The app is designed to run locally with your own API keys.
 
+## Idea
+
+The project is built around a simple problem: data-heavy articles are often reduced to charts, but many stories need a visual metaphor that makes the human meaning visible quickly. DataForPeople separates that work into small steps:
+
+- extract only the facts that can be shown visually
+- identify the `core_tension`, meaning the human conflict behind the data
+- turn that tension into a visual metaphor
+- generate several image variants
+- critique the generated image before final scoring
+
+The critic loop is inspired by the Visualizer-Critic pattern from *PaperBanana: Automating Academic Illustration for AI Scientists*. In that pattern, a generated image is inspected by a critic model, the prompt is revised, and the image is regenerated for a small number of rounds. DataForPeople uses the same idea for data-journalism visuals.
+
 ## Workflow
 
 ```text
@@ -20,6 +32,12 @@ URL
 
 - Text and vision reasoning: Gemini 2.5 Flash
 - Image generation: Hugging Face Inference API, FLUX.1-dev through the `fal-ai` provider
+
+## Critic Loop
+
+The first generated image is not assumed to be correct. The critic checks whether the image actually shows the source facts and whether the core tension is readable without a caption. If the image misses the point, the critic writes a refined prompt and the system generates a new set of variants.
+
+The implementation keeps the best-scoring round instead of blindly using the last regenerated image. This avoids a common failure mode where a later prompt revision makes the image worse than an earlier round.
 
 ## Run Locally
 
@@ -73,3 +91,7 @@ Example `/run` body:
 - Local/private network URLs are blocked.
 - Raw API keys should stay in environment variables or browser local storage.
 - Image generation may use paid Hugging Face quota depending on account settings.
+
+## Reference
+
+- Zhu et al. (2026), *PaperBanana: Automating Academic Illustration for AI Scientists*, arXiv:2601.23265.
