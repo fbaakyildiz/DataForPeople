@@ -42,11 +42,20 @@ footer {
 }
 
 .site-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 20px;
   padding: 18px 0;
+  border-radius: 0 0 18px 18px;
+  background:
+    linear-gradient(135deg, rgba(238, 243, 251, 0.92), rgba(246, 248, 251, 0.72)),
+    radial-gradient(circle at 0% 0%, rgba(109, 93, 246, 0.14), transparent 22rem),
+    radial-gradient(circle at 100% 0%, rgba(15, 118, 110, 0.12), transparent 20rem);
+  backdrop-filter: blur(18px) saturate(1.08);
 }
 
 .brand {
@@ -91,18 +100,22 @@ nav a {
 
 nav a.github-nav-link {
   display: inline-flex;
-  width: 106px;
-  min-height: 40px;
+  width: 92px;
+  height: 38px;
+  min-height: 38px;
   align-items: center;
   justify-content: center;
   background: rgba(255, 255, 255, 0.82);
-  padding: 8px 13px;
+  overflow: hidden;
+  padding: 8px 11px;
 }
 
 nav a.github-nav-link img {
   display: block;
-  width: 78px;
-  height: auto;
+  width: 68px !important;
+  max-width: 68px;
+  height: auto !important;
+  max-height: 18px;
   object-fit: contain;
 }
 
