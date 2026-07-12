@@ -9,6 +9,38 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="styles.css" />
+    <style>
+      .hero {
+        position: relative;
+        overflow: hidden;
+      }
+
+      .hero::before {
+        position: absolute;
+        right: -80px;
+        bottom: 20px;
+        width: min(42vw, 420px);
+        height: min(42vw, 420px);
+        pointer-events: none;
+        background:
+          linear-gradient(90deg, rgba(126, 34, 206, 0.18) 2px, transparent 2px) 0 20% / 100% 18% no-repeat,
+          linear-gradient(90deg, rgba(126, 34, 206, 0.13) 2px, transparent 2px) 0 48% / 82% 18% no-repeat,
+          linear-gradient(90deg, rgba(126, 34, 206, 0.1) 2px, transparent 2px) 0 76% / 68% 18% no-repeat;
+        content: "";
+        filter: blur(0.2px);
+        opacity: 0.72;
+        transform: rotate(-8deg);
+      }
+
+      @media (max-width: 680px) {
+        .hero::before {
+          right: -120px;
+          width: 260px;
+          height: 260px;
+          opacity: 0.38;
+        }
+      }
+    </style>
   </head>
   <body>
     <header class="site-header">
