@@ -252,7 +252,13 @@ h2 {
   position: relative;
   z-index: 1;
   display: grid;
+  grid-template-areas:
+    "source rail meaning"
+    "split split split"
+    "prompt variants variants"
+    "critic critic gate";
   grid-template-columns: 1fr 28px 1fr;
+  grid-template-rows: auto 18px auto auto;
   gap: 12px;
   align-items: center;
   border: 1px solid rgba(217, 224, 236, 0.82);
@@ -275,6 +281,14 @@ h2 {
 
 .flow-node {
   min-height: 112px;
+}
+
+.source {
+  grid-area: source;
+}
+
+.meaning {
+  grid-area: meaning;
 }
 
 .flow-node small {
@@ -308,6 +322,7 @@ h2 {
 }
 
 .flow-rail {
+  grid-area: rail;
   position: relative;
   height: 2px;
   border-radius: 999px;
@@ -327,7 +342,7 @@ h2 {
 }
 
 .flow-rail.split {
-  grid-column: 1 / -1;
+  grid-area: split;
   width: 72%;
   height: 1px;
   justify-self: center;
@@ -335,18 +350,20 @@ h2 {
 }
 
 .prompt {
-  grid-column: 1 / 2;
+  grid-area: prompt;
 }
 
 .variant-stack {
   display: grid;
-  grid-column: 2 / 4;
+  grid-area: variants;
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
   height: 112px;
 }
 
 .variant-stack span {
+  position: relative;
+  min-height: 0;
   border: 1px solid rgba(255, 255, 255, 0.78);
   border-radius: 14px;
   background:
@@ -355,19 +372,33 @@ h2 {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.42), 0 16px 26px rgba(76, 29, 149, 0.13);
 }
 
+.variant-stack span::after {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.92);
+  content: attr(data-variant);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  padding: 4px 6px;
+}
+
 .variant-stack span:nth-child(2) {
-  transform: translateY(10px);
   opacity: 0.88;
 }
 
 .variant-stack span:nth-child(3) {
-  transform: translateY(20px);
   opacity: 0.74;
 }
 
 .critic-loop {
   display: flex;
-  grid-column: 1 / 3;
+  grid-area: critic;
   align-items: center;
   gap: 12px;
 }
@@ -387,6 +418,8 @@ h2 {
 }
 
 .flow-gate {
+  display: grid;
+  grid-area: gate;
   min-height: 82px;
   align-content: center;
   border-color: rgba(76, 29, 149, 0.24);
@@ -538,15 +571,17 @@ footer a {
   }
 
   .flow-diagram {
+    grid-template-areas:
+      "source"
+      "rail"
+      "meaning"
+      "split"
+      "prompt"
+      "variants"
+      "critic"
+      "gate";
     grid-template-columns: 1fr;
-  }
-
-  .flow-rail,
-  .flow-rail.split,
-  .prompt,
-  .variant-stack,
-  .critic-loop {
-    grid-column: auto;
+    grid-template-rows: auto;
   }
 
   .flow-rail {
@@ -561,6 +596,16 @@ footer a {
     right: 50%;
     bottom: -2px;
     transform: translateX(50%) rotate(135deg);
+  }
+
+  .flow-rail.split {
+    width: 72%;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(76, 29, 149, 0.18), rgba(168, 85, 247, 0.68));
+  }
+
+  .flow-rail.split::after {
+    display: none;
   }
 
   .variant-stack {
