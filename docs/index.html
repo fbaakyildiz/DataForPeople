@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="styles.css?v=flow-1" />
     <style>
       .hero {
         position: relative;
@@ -74,10 +74,45 @@
             <a class="button secondary" href="#run">Run locally</a>
           </div>
         </div>
-        <aside class="panel" aria-label="Project summary">
-          <div class="metric">
-            <span>A1-A3</span>
-            <small>agent pipeline</small>
+        <aside class="panel story-flow" aria-label="DataForPeople pipeline diagram">
+          <div class="flow-header">
+            <span>Structured visual reasoning</span>
+            <strong>Source meaning stays attached to every image round.</strong>
+          </div>
+          <div class="flow-diagram" aria-hidden="true">
+            <div class="flow-node source">
+              <small>01</small>
+              <strong>Article</strong>
+              <span>URL + source text</span>
+            </div>
+            <div class="flow-rail"></div>
+            <div class="flow-node meaning">
+              <small>02</small>
+              <strong>Core tension</strong>
+              <span>facts, numbers, tone</span>
+            </div>
+            <div class="flow-rail split"></div>
+            <div class="flow-node prompt">
+              <small>03</small>
+              <strong>Visual prompt</strong>
+              <span>metaphor + scene plan</span>
+            </div>
+            <div class="variant-stack" aria-label="Generated image variants">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+            <div class="critic-loop">
+              <span class="loop-arrow">↻</span>
+              <div>
+                <strong>Critic loop</strong>
+                <small>inspect · refine · keep best round</small>
+              </div>
+            </div>
+            <div class="flow-gate">
+              <strong>Publish</strong>
+              <span>or human review</span>
+            </div>
           </div>
           <div class="panel-grid">
             <div>
