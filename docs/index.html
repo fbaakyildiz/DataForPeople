@@ -61,7 +61,7 @@
 
     <main id="top">
       <section class="hero">
-        <div>
+        <div class="hero-copy">
           <p class="eyebrow">Visual storytelling pipeline</p>
           <h1>From article URL to visual story concept.</h1>
           <p class="hero-text">
@@ -69,6 +69,24 @@
             generates image variants, and routes the result through a PaperBanana-inspired critic loop
             and quality gate.
           </p>
+          <div class="panel-grid">
+            <div>
+              <strong>Input</strong>
+              <span>Public article or report URL</span>
+            </div>
+            <div>
+              <strong>Output</strong>
+              <span>Generated visual and review metadata</span>
+            </div>
+            <div>
+              <strong>Reference</strong>
+              <span>PaperBanana Visualizer-Critic loop</span>
+            </div>
+            <div>
+              <strong>Runtime</strong>
+              <span>Local FastAPI app</span>
+            </div>
+          </div>
           <div class="hero-actions">
             <a class="button primary" href="https://github.com/fbaakyildiz/DataForPeople" target="_blank" rel="noreferrer">Open repo</a>
             <a class="button secondary" href="#run">Run locally</a>
@@ -112,24 +130,6 @@
             <div class="flow-gate">
               <strong>Publish</strong>
               <span>or human review</span>
-            </div>
-          </div>
-          <div class="panel-grid">
-            <div>
-              <strong>Input</strong>
-              <span>Public article or report URL</span>
-            </div>
-            <div>
-              <strong>Output</strong>
-              <span>Generated visual and review metadata</span>
-            </div>
-            <div>
-              <strong>Reference</strong>
-              <span>PaperBanana Visualizer-Critic loop</span>
-            </div>
-            <div>
-              <strong>Runtime</strong>
-              <span>Local FastAPI app</span>
             </div>
           </div>
         </aside>

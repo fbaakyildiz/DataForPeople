@@ -169,6 +169,17 @@ h2 {
   line-height: 1.65;
 }
 
+.hero-copy .panel-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  max-width: 720px;
+  margin-top: 24px;
+}
+
+.hero-copy .panel-grid div {
+  background: rgba(255, 255, 255, 0.62);
+  padding: 14px;
+}
+
 .hero-actions {
   display: flex;
   flex-wrap: wrap;
@@ -568,6 +579,10 @@ footer a {
 
   .button {
     width: 100%;
+  }
+
+  .hero-copy .panel-grid {
+    grid-template-columns: 1fr;
   }
 
   .flow-diagram {
