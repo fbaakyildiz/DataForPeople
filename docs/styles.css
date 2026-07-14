@@ -126,7 +126,7 @@ nav a.github-nav-link img {
   grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
   gap: 28px;
   min-height: 600px;
-  align-items: center;
+  align-items: start;
   padding: 56px 0 64px;
 }
 
